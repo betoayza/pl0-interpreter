@@ -12,6 +12,8 @@
         (is (= true (palabra-reservada? "CALL")))
         (is (= true (palabra-reservada? "IF")))
         (is (= false (palabra-reservada? 'PALABRA)))
+        (is (= false (palabra-reservada? "PALABRA")))
+        (is (= false (palabra-reservada? "Y")))
     )   
 )
 
