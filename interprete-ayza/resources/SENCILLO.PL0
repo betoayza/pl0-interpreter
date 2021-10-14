@@ -1,0 +1,7 @@
+var X, Y;
+
+begin  
+  X := 10;
+  write ('Y='); readln (Y);
+  writeln ('SUMA=',X+Y);
+end.
