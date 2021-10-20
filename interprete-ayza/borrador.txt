@@ -1,0 +1,23 @@
+//Funciones reemplazadas
+(defn cadena? [x]
+        ;lo que venga lo convierto en string
+        (let [strX (str x)]
+            ;si ese string tiene sub-cadena...
+            (if
+                (and                              
+                    ;si tiene minimo 2 apostrofos          
+                    (> (count (filter (fn [i] (= i \')) (mapv char strX))) 1)
+                    ;si tiene una cantidad par de apostrofos               
+                        (= 
+                                (rem
+                                    (count (filter (fn [i] (= i \')) (mapv char strX)))
+                                    2
+                                ) 
+                                0               
+                        )               
+                )
+                true 
+                false
+            )
+        )
+)

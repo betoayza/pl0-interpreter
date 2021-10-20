@@ -704,30 +704,31 @@
                   (do (print (apply str (butlast (rest (str (second fetched)))))) (flush)
                       (recur cod mem (inc cont-prg) pila-dat pila-llam)))
           NL (do (prn) (recur cod mem (inc cont-prg) pila-dat pila-llam))
+    ; POP: Saca un valor de la pila de datos, lo coloca en una direccion de memoria que forma parte de la instruccion (direccionamiento directo) e incrementa el contador de programa
           POP 
              (recur 
-                  cod
-                  ;(conj mem (last pila-dat))
-                  mem
+                  cod                  
+                  (conj mem (last pila-dat))
                   (inc cont-prg)
-                  (vec (drop-last pila-dat))           
-                  ;pila-llam
-                  (conj pila-llam (last pila-dat))
+                  (pop pila-dat)       
+                  pila-llam
              )
+    ; PFM: Coloca en la pila de datos un valor proveniente de una direccion de memoria que forma parte de la instruccion (PUSH FROM MEMORY: direccionamiento directo) e incrementa el contador de programa 
           PFM   
              (recur 
                   cod
                   mem
                   (inc cont-prg)
-                  (conj pila-dat (last pila-llam))         
+                  (conj pila-dat (last mem))      ;Valor de la direccion de memoria que forma parte de la instruccion = (second fetched)   
                   pila-llam
              )
+    ; PFI: Coloca en la pila de datos un valor que forma parte de la instruccion (PUSH FROM INSTRUCTION: direccionamiento inmediato) e incrementa el contador de programa 
           PFI
              (recur 
                   cod
                   mem
                   (inc cont-prg)
-                  (conj pila-dat (second fetched))           
+                  (conj pila-dat (second fetched))       ;Valor/direccion que forma parte de la instruccion = (second fetched) 
                   pila-llam
              )
           ADD   
@@ -855,6 +856,7 @@
                         pila-llam
                   )                  
             )
+; JC : Saca un valor de la pila de datos y si es 0 incrementa el contador de programa (si no, reemplaza el contador de programa por la direccion que forma parte de la instruccion)
         JC 
             (let [
                   topePila (last pila-dat)
@@ -865,14 +867,14 @@
                         cod
                         mem
                         (inc cont-prg)
-                        pila-dat          
+                        (pop pila-dat)       
                         pila-llam
                     )
                     (recur 
                         cod
                         mem
-                        (last pila-llam)
-                        pila-dat          
+                        (second fetched) ; (second fetched) = "direccion que forma parte de la instruccion"
+                        (pop pila-dat)          
                         pila-llam
                     )
                  )                                   
@@ -1015,27 +1017,8 @@
 ; user=> (cadena? 'Hola)
 ; false
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn cadena? [x]
-        ;lo que venga lo convierto en string
-        (let [strX (str x)]
-            ;si ese string tiene sub-cadena...
-            (if
-                (and                              
-                    ;si tiene minimo 2 apostrofos          
-                    (> (count (filter (fn [i] (= i \')) (mapv char strX))) 1)
-                    ;si tiene una cantidad par de apostrofos               
-                        (= 
-                                (rem
-                                    (count (filter (fn [i] (= i \')) (mapv char strX)))
-                                    2
-                                ) 
-                                0               
-                        )               
-                )
-                true 
-                false
-            )
-        )
+(defn cadena? [x]    
+    (some? (re-matches #"\'[^\']*\'" (str x)))
 ) ;(completado y testeado)
 
 
@@ -1498,8 +1481,10 @@
         (= (estado amb) :sin-errores)
         ;buscar pos 0 de bytecode y reemplazar 2ndo elemento por el count del bytecode
         ( let [
-               nuevoPrimerElementoBytecode (assoc (get (bytecode amb) ubi) 1 (count (bytecode amb)))
-               nuevoBytecode (assoc (bytecode amb) ubi nuevoPrimerElementoBytecode)    
+               tamañoBytecode (count (bytecode amb))
+               subArrayDelByteCodeAmodificar (get (bytecode amb) ubi)
+               subArrayModificadoBytecode (assoc subArrayDelByteCodeAmodificar 1 tamañoBytecode)
+               nuevoBytecode (assoc (bytecode amb) ubi subArrayModificadoBytecode)    
               ]
               (assoc amb 6 nuevoBytecode)          
         )
