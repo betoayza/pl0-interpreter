@@ -693,6 +693,7 @@
         opcode (if (symbol? fetched) fetched (first fetched))
       ]     
        (case opcode
+          RHLT [mem cont-prg pila-dat pila-llam] ;; Para test
           HLT nil
           IN (let [entr (try (Integer/parseInt (read-line)) (catch Exception e ""))]
                   (if (integer? entr)
@@ -708,10 +709,11 @@
           POP 
              (recur 
                   cod                  
-                  (conj mem (last pila-dat))
+                  (vector (last pila-dat))
+                  ;(vec (take (count mem) (repeat (last pila-dat))))
                   (inc cont-prg)
-                  (pop pila-dat)       
-                  pila-llam
+                  pila-dat       
+                  pila-llam 
              )
     ; PFM: Coloca en la pila de datos un valor proveniente de una direccion de memoria que forma parte de la instruccion (PUSH FROM MEMORY: direccionamiento directo) e incrementa el contador de programa 
           PFM   
@@ -719,7 +721,7 @@
                   cod
                   mem
                   (inc cont-prg)
-                  (conj pila-dat (last mem))      ;Valor de la direccion de memoria que forma parte de la instruccion = (second fetched)   
+                  (conj pila-dat (last pila-llam))      ;Valor de la direccion de memoria que forma parte de la instruccion = (second fetched)   
                   pila-llam
              )
     ; PFI: Coloca en la pila de datos un valor que forma parte de la instruccion (PUSH FROM INSTRUCTION: direccionamiento inmediato) e incrementa el contador de programa 
@@ -728,7 +730,7 @@
                   cod
                   mem
                   (inc cont-prg)
-                  (conj pila-dat (second fetched))       ;Valor/direccion que forma parte de la instruccion = (second fetched) 
+                  (conj pila-dat (second fetched))        
                   pila-llam
              )
           ADD   
@@ -856,7 +858,7 @@
                         pila-llam
                   )                  
             )
-; JC : Saca un valor de la pila de datos y si es 0 incrementa el contador de programa (si no, reemplaza el contador de programa por la direccion que forma parte de la instruccion)
+        ;JC : Saca un valor de la pila de datos y si es 0 incrementa el contador de programa (si no, reemplaza el contador de programa por la direccion que forma parte de la instruccion)
         JC 
             (let [
                   topePila (last pila-dat)
@@ -887,19 +889,23 @@
                   pila-dat           
                   (vec (drop-last pila-llam))
             )
-        CAL
+; CAL: Coloca en la pila de llamadas el valor del contador de programa incrementado en 1 y reemplaza el contador de programa por la direccion que forma parte de la instruccion
+        CAL ;hecho
             (recur 
                   cod
                   mem
-                  (last pila-llam) ;cont-prg
+                  (second fetched) 
+                  ;(last mem)
                   pila-dat           
-                  (conj pila-llam (inc cont-prg)) ;pila-llam
+                  (vector (inc cont-prg)) ;pila-llam
             )
+; JMP: Reemplaza el contador de programa por la direccion que forma parte de la instruccion
        JMP 
             (recur 
                     cod
                     mem
-                    (last pila-llam) ;cont-prg
+                    (second fetched) ;cont-prg
+                    ;(last mem)
                     pila-dat           
                     pila-llam
             )
@@ -1017,7 +1023,9 @@
 ; false
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn cadena? [x]    
-    (some? (re-matches #"\'[^\']*\'" (str x)))
+    ;"some?" devuelve "true" si lo que hay es distinto de "nil", de lo contrario, "false"
+    ;"re-matches" devuelve la cadena coincidente si existe
+    (some? (re-matches #"\'[^\']*\'" (str x))) ;si coincide la regex que empieza y termina con "'" y que en el medio no puede algun otro "'".
 ) ;(completado y testeado)
 
 
@@ -1194,9 +1202,9 @@
                 contexto (contexto amb)
                 ;nuevoContexto (conj [] subvec1_contexto nuevoSubVec2Contexto)  ;(amb 4)        
                 contadorVariables (prox-var amb)  ;(amb 5)
-                ByteCode (bytecode amb) ;(amb 6)            
+                byteCode (bytecode amb) ;(amb 6)            
                ]
-               (conj [] nuevoAmbSub0 nuevoAmbSub1 nuevoAmbSub2 estado contexto contadorVariables ByteCode) 
+               (conj [] nuevoAmbSub0 nuevoAmbSub1 nuevoAmbSub2 estado contexto contadorVariables byteCode) 
           )
           amb
       )
@@ -1235,8 +1243,7 @@
 (defn expresion [amb]     
      ;(if 
         ;si trata de un operador monadico -> llamo a "procesar signo unario", ya que afecta a un solo numero, no a una expresion
-        ;(= (class (get (simb-no-parseados-aun amb) 0)) Long)
-           
+        ;(= (class (get (simb-no-parseados-aun amb) 0)) Long)           
         (if 
             (= (estado amb) :sin-errores)          
             ;(generar-signo (procesar-mas-terminos (termino amb)) (simb-actual amb))
@@ -1476,10 +1483,10 @@
 ; [WRITELN (END .) [] :sin-errores [[0 3] []] 6 [[JMP 8] [JMP 4] [CAL 1] RET [PFM 2] OUT NL RET]]
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn fixup [amb ubi]
-     ( if
+     (if
         (= (estado amb) :sin-errores)
         ;buscar pos 0 de bytecode y reemplazar 2ndo elemento por el count del bytecode
-        ( let [
+        (let [
                tamañoBytecode (count (bytecode amb))
                subArrayDelByteCodeAmodificar (get (bytecode amb) ubi)
                subArrayModificadoBytecode (assoc subArrayDelByteCodeAmodificar 1 tamañoBytecode)
@@ -1508,7 +1515,7 @@
 (defn generar-operador-relacional [amb operador]
      ( if
              (= (estado amb) :sin-errores)         
-             ( cond 
+             (cond 
                   (= operador '=) ( let
                                       [
                                        operadorRi 'EQ
