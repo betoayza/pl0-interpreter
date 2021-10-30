@@ -709,10 +709,10 @@
           POP 
              (recur 
                   cod                  
-                  (vector (last pila-dat))
-                  ;(vec (take (count mem) (repeat (last pila-dat))))
+                  ;(conj mem (first pila-dat))     
+                  (assoc mem (second fetched) (last pila-dat))           
                   (inc cont-prg)
-                  pila-dat       
+                  (pop pila-dat)       
                   pila-llam 
              )
     ; PFM: Coloca en la pila de datos un valor proveniente de una direccion de memoria que forma parte de la instruccion (PUSH FROM MEMORY: direccionamiento directo) e incrementa el contador de programa 
@@ -721,7 +721,7 @@
                   cod
                   mem
                   (inc cont-prg)
-                  (conj pila-dat (last pila-llam))      ;Valor de la direccion de memoria que forma parte de la instruccion = (second fetched)   
+                  (conj pila-dat (mem (second fetched)))         
                   pila-llam
              )
     ; PFI: Coloca en la pila de datos un valor que forma parte de la instruccion (PUSH FROM INSTRUCTION: direccionamiento inmediato) e incrementa el contador de programa 
@@ -875,7 +875,7 @@
                     (recur 
                         cod
                         mem
-                        (second fetched) ; (second fetched) = "direccion que forma parte de la instruccion"
+                        (second fetched) ; ;(checkeado) --(second fetched) = "direccion que forma parte de la instruccion"
                         (pop pila-dat)          
                         pila-llam
                     )
@@ -889,23 +889,21 @@
                   pila-dat           
                   (vec (drop-last pila-llam))
             )
-; CAL: Coloca en la pila de llamadas el valor del contador de programa incrementado en 1 y reemplaza el contador de programa por la direccion que forma parte de la instruccion
+    ;; CAL: Coloca en la pila de llamadas el valor del contador de programa incrementado en 1 y reemplaza el contador de programa por la direccion que forma parte de la instruccion
         CAL ;hecho
             (recur 
                   cod
                   mem
-                  (second fetched) 
-                  ;(last mem)
+                  (second fetched) ;(checkeado)   ;direccion que forma parte de la instruccion = (second fetched)          
                   pila-dat           
-                  (vector (inc cont-prg)) ;pila-llam
+                  (conj pila-llam (inc cont-prg))
             )
-; JMP: Reemplaza el contador de programa por la direccion que forma parte de la instruccion
+    ;; JMP: Reemplaza el contador de programa por la direccion que forma parte de la instruccion
        JMP 
             (recur 
                     cod
                     mem
-                    (second fetched) ;cont-prg
-                    ;(last mem)
+                    (second fetched) ;(chekeado)                   
                     pila-dat           
                     pila-llam
             )
