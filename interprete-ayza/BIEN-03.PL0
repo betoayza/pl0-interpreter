@@ -30,8 +30,10 @@ call DIVIDIR;
 
 procedure SALIDA;
 begin
-  write ('  Cociente: ', Q); writeln;
-  write ('  Resto: '); writeln (R);
+  write ('  Cociente: ', Q); 
+  writeln;
+  write ('  Resto: '); 
+  writeln (R);
 end;
 
 begin
@@ -43,15 +45,20 @@ begin
   writeln ('Cada CALL DIVIDIR se refiere a un procedimiento distinto.');
   writeln ('************************************************************');
 
-  write ('Dividendo: '); readln (X);
-  write ('Divisor: '); readln (Y);
+  write ('Dividendo: '); 
+  readln (X);
+  write ('Divisor: '); 
+  readln (Y);
   writeln;
   if Y <> 0 then
     begin
-      write ('Metodo 1'); writeln;
+      write ('Metodo 1'); 
+      writeln;
       call DIVIDIR;
-      call SALIDA; writeln;
-      write ('Metodo 2'); writeln;
+      call SALIDA; 
+      writeln;
+      write ('Metodo 2'); 
+      writeln;
       call OTRO;
       call SALIDA;
     end;

@@ -909,7 +909,7 @@
             )
        )      
   )
-)                
+) ;completado               
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -929,16 +929,51 @@
     ;Si no --> convertir las palabras clave en MAYUSCULAS
     
          (if 
-            (= (count (filter (fn [i] (= i \')) s)) 2) ;si tiene dos apostrofos
+            ;si tiene dos apostrofos (si tiene subcadena pl0)
+            (= (count (filter (fn [i] (= i \')) s)) 2) 
             (let [
                     primerParteAmayusc (.toUpperCase (.substring s 0 (.indexOf s "'"))) ;volver a mayusculas hasta el 1er apostrofo
                     cadenaPl0 (.substring s (.indexOf s "'") (inc (.lastIndexOf s "'"))) ;guardar la cadena PL0 como esta
-                    ultimaParte (.substring s (inc (.lastIndexOf s "'")) (count s))
+                    ;ultimaParte (.substring s (inc (.lastIndexOf s "'")) (count s))
+                    ultimaParte (.substring s (inc (.lastIndexOf s "'")) (inc (.indexOf s ";"
+                    )))
                  ]
-                 (apply str (concat primerParteAmayusc cadenaPl0 ultimaParte));concatenar las partes                    
+                 ;concatenar las partes 
+                 (apply str (concat primerParteAmayusc cadenaPl0 ultimaParte))                   
             )
-            (.toUpperCase s) ;pasa todo a mayúsculas
+            ;caso false: pasa todo a mayúsculas
+            (.toUpperCase (str s))
+            ;(.toUpperCase "readln (Y);")            
          )
+        
+        ;;Objetivo: Reemplazar todo lo que no es coincidencia de cadenas pl/o por sus mayusculas
+       
+        ;(re-find #"\'[^\']*\'" "write ('Y='); readln (Y);")
+        ;(.replace "write ('Y='); readln (Y);" "'Y='" "")
+        ;(.toUpperCase (.replace "write ('Y='); readln (Y);" "'Y='" ""))
+        
+        ;(.replace "write ('Y='); readln (Y);" (.replace "write ('Y='); readln (Y);" "'Y='" "") (.toUpperCase (.replace "write ('Y='); readln (Y);" "'Y='" "")))
+        ;(.replaceAll "write ('Y='); readln (Y);" "write (); readln (Y);" "WRITE (); READLN (Y);")
+
+         ;   (if                 
+          ;      (and 
+           ;         (cadena? s) ;si contine cadena pl0
+            ;        (string? s) ;si ademas es cadenasdsadasdsd
+             ;   )
+             ;   (let [
+                      ;subcadena pl0
+             ;         subcadenaPl0 (re-find #"\'[^\']*\'" s) 
+                      ;lo que no es subcadena pl0
+             ;         noCadenaPl0 (.replace s subcadenaPl0 "")
+                      ;lo que no es pl0 pasado a mayusculas
+             ;         noPl0enMayusc (.toUpperCase noCadenaPl0) 
+                      ;cadena nueva
+            ;          cadenaNueva (.replace s noCadenaPl0 noPl0enMayusc)
+            ;         ]
+            ;         cadenaNueva
+            ;    )
+            ;    (.toUpperCase s) ;caso false: pasar la cadena entera a mayusculas
+            ;)
 ) ;(completado y testeado)
 
 
@@ -998,7 +1033,7 @@
                         ;si empieza por una letra
                         (contains? (hash-set "A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P" "Q" "R" "S" "T" "U" "V" "W" "X" "Y" "Z") (.toUpperCase (str (get (str x) 0)))) 
                         ;si no es una palabra reservada
-                        (= (palabra-reservada? (str x)) false)      
+                        (= (palabra-reservada? (.toUpperCase (str x))) false)      
                         ;si no contiene ningún tipo de operador (aritmetico ni booleano)                        
                         ;(= ops_en_x 0)
                     )
@@ -1024,7 +1059,9 @@
     ;"some?" devuelve "true" si lo que hay es distinto de "nil", de lo contrario, "false"
     ;"re-matches" devuelve la cadena coincidente si existe
     (some? (re-matches #"\'[^\']*\'" (str x))) ;si coincide la regex que empieza y termina con "'" y que en el medio no puede algun otro "'".
-) ;(completado y testeado)
+    ;(some? (re-find #"\'[^\']*\'" (str x)))
+)
+ ;(completado y testeado)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1426,7 +1463,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn generar 
   ( [amb instr]
-      ( if
+      (if
           (= (estado amb) :sin-errores)
           (let [ 
                 nuevoBytecode (conj (bytecode amb) instr)
@@ -1462,7 +1499,7 @@
           [
            ultimoSimboloEscaneado (last (filter (fn [x] (identificador? x)) (simb-ya-parseados amb)))
            subVec2Contexto (get (contexto amb) 1)
-           listaResultados  (filter #(.contains % ultimoSimboloEscaneado) subVec2Contexto) 
+           listaResultados (filter #(.contains % ultimoSimboloEscaneado) subVec2Contexto) 
           ]
           listaResultados 
      )

@@ -25,8 +25,10 @@ Begin
   writeln ('(Metodo campesino ruso de multiplicacion)');
   writeln ('************************************************************');
 
-  write ('X: '); readLn (X);
-  write ('Y: '); readLn (Y);
+  write ('X: '); 
+  readLn (X);
+  write ('Y: '); 
+  readLn (Y);
   call MULTIPLICAR;
   writeLn ('X*Y=', Z);
   writeln;

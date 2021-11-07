@@ -28,7 +28,8 @@
         (is (= true (identificador? 'V2)))
         (is (= true (identificador? "ASD2")))        
         (is (= true (identificador? 'ASD2)))
-        (is (= true (identificador? "Y")))        
+        (is (= true (identificador? "Y"))) 
+        (is (= false (identificador? "READLN")))          
     )   
 )
 
